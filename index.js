@@ -23,24 +23,28 @@ app.listen(9099,function(){
 });
 
 app.get("/test",function(req, res){
-    //eventEmitter.emit("getData", req, res);
-    
-    bcrypt.hash('nexus@123', 10, function(err, hash) {
-        console.log(hash);
-    });
 
 });
 
 app.post("/validate", function(req, res){
     var body = "";
+    var userName = "";
+    var password = "";
+
     req.on('data', function (chunk) {
       body += chunk;
     });
     req.on('end', function () {
-        console.log(body);
         var jsonObj = JSON.parse(body);
-        console.log(jsonObj.credentials);
+        this.userName = jsonObj.credentials.userName;
+        this.password = jsonObj.credentials.password;
     })
+
+    eventEmitter.emit('encrypt',this.password, function(hashPass){
+        console.log(hashPass);
+    });
+
+    
 });
 
 eventEmitter.on('getData', function(req, res){
@@ -61,10 +65,13 @@ eventEmitter.on('getData', function(req, res){
     })
 })
 
-eventEmitter.on('encrypt', function(req, res){
-    
-
-    
+eventEmitter.on('encrypt', function(pass){
+    var hashedPass = "";
+    bcrypt.hash(pass, 5, function(err, hash) {
+        console.log(hash + " - ");
+        hashedPass = hash;
+    });
+    return hashedPass;
 })
 
 function encryptData(text){
